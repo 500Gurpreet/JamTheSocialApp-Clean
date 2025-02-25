@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Event</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Bingo Event</h1>
+        <div id="progressBar">
+            <div id="progress"></div>
+        </div>
+        <div id="questionsContainer"></div>
+        <button id="nextQuestion" style="display:none;">Next Question</button>
+        <div id="finishMessage" style="display:none;">
+            <h2>Congratulations, Bingo!!</h2>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

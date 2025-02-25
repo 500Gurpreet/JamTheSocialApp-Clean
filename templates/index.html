@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Event Setup</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Setup Your Bingo Event</h1>
+        <form id="setupForm">
+            <!-- Event Type -->
+            <label for="eventType">Event Type:</label>
+            <select id="eventType" name="eventType">
+                <option value="networking">Hosting a networking event</option>
+                <option value="social">Hosting a social gathering</option>
+                <option value="party">Hosting a party</option>
+                <option value="workshop">Hosting a workshop</option>
+                <option value="wedding">Hosting a wedding</option>
+                <option value="speeddate">Hosting a speed date</option>
+                <option value="speednetworking">Hosting a speed networking</option>
+                <option value="meetup">Hosting a meetup</option>
+                <option value="eventorite">Hosting an event on Eventorite</option>
+                <option value="group">Hosting a group</option>
+                <option value="conference">Hosting a conference</option>
+                <option value="all">For All Hosts</option>
+            </select>
+
+            <!-- Tone Input -->
+            <label for="tone">Tone & Mood Preferences:</label>
+            <input type="text" id="tone" name="tone" placeholder="e.g., Fun & Playful, Serious & Thoughtful, Romantic & Flirty, Casual & Chill, Motivational & Inspiring">
+
+            <!-- Age Group (From and To in one line) -->
+            <div class="age-group">
+                <label for="ageFrom">Age Group:</label>
+                <div class="age-inputs">
+                    <input type="number" id="ageFrom" name="ageFrom" min="0" max="100" placeholder="From">
+                    <input type="number" id="ageTo" name="ageTo" min="0" max="100" placeholder="To">
+                </div>
+            </div>
+
+            <!-- Number of Questions (Slider) -->
+            <label for="numQuestions">Number of Questions (1 to 25):</label>
+            <div class="slider-container">
+                <input type="range" id="numQuestions" name="numQuestions" min="1" max="25" value="10">
+                <span id="numQuestionsValue">10</span>
+            </div>
+
+            <!-- Start Event Button -->
+            <button type="submit">Start Event</button>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
