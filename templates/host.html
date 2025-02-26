@@ -9,6 +9,11 @@
 <body>
     <div class="container">
         <h1>Host Screen</h1>
+        <div id="qrCode">
+            <h2>Event QR Code</h2>
+            <img src="data:image/png;base64,{{ qr_code }}" alt="Event QR Code">
+            <p>Scan this QR code to join the event.</p>
+        </div>
         <div id="participants">
             <h2>Participants</h2>
             <ul id="participantList">
@@ -27,16 +32,19 @@
         const socket = io();
         const eventId = "{{ event_id }}";
 
+        // Update participants list in real time
         socket.on('update_participants', function(data) {
             const participantList = document.getElementById('participantList');
             participantList.innerHTML = data.participants.map(name => `<li>${name}</li>`).join('');
         });
 
+        // Update completed list in real time
         socket.on('update_completed', function(data) {
             const completedList = document.getElementById('completedList');
             completedList.innerHTML = data.completed.map(name => `<li>${name}</li>`).join('');
         });
 
+        // Join the event room
         socket.emit('join_event', { event_id: eventId });
     </script>
 </body>
