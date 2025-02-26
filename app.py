@@ -8,8 +8,6 @@ from io import BytesIO
 import base64
 from flask_socketio import SocketIO, emit
 import random
-import json
-import logging
 
 # Load environment variables
 load_dotenv()
@@ -24,10 +22,6 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Store event data and participants
 events = {}
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 def generate_ai_questions(age_group, event_type, tone, num_questions):
     """
@@ -59,21 +53,64 @@ def generate_ai_questions(age_group, event_type, tone, num_questions):
             temperature=0.7,
         )
         questions = response.choices[0].message.content.strip()
-        
-        # Ensure the response is properly decoded
-        if isinstance(questions, bytes):
-            questions = questions.decode('utf-8')
-        
-        # Safely parse the JSON response
-        return json.loads(questions)
+        return eval(questions)  # Convert the string response to a Python list
     except Exception as e:
-        logger.error(f"Error generating questions: {e}")
+        print(f"Error generating questions: {e}")
         return []
 
 @app.route('/')
 def index():
-    logger.info("Rendering index page")
     return render_template('index.html')
+
+
+
+
+
+
+
+
+
+@app.route('/submit_answer', methods=['POST'])
+def submit_answer():
+    try:
+        data = request.json
+        event_id = data.get('event_id')
+        name = data.get('name')
+        answer = data.get('answer')
+
+        if event_id not in events or name not in events[event_id]["participants"]:
+            return jsonify({"error": "Invalid event or participant."}), 404
+
+        participant = events[event_id]["participants"][name]
+        current_index = participant["current_question_index"]
+
+        # Check if the answer is correct (for now, assume all answers are correct)
+        # You can add logic to validate the answer if needed
+
+        # Move to the next question
+        participant["current_question_index"] += 1
+
+        # Check if all questions are completed
+        if participant["current_question_index"] >= len(participant["questions"]):
+            participant["completed"] = True
+            return jsonify({"success": True, "completed": True, "message": "Congratulations, Bingo!"})
+
+        return jsonify({
+            "success": True,
+            "completed": False,
+            "next_question": participant["questions"][participant["current_question_index"]]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
 
 @app.route('/start_event', methods=['POST'])
 def start_event():
@@ -89,7 +126,6 @@ def start_event():
 
         questions = generate_ai_questions(age_group, event_type, tone, num_questions)
         if not questions:
-            logger.error("Failed to generate questions.")
             return jsonify({"error": "Failed to generate questions. Please try again."}), 500
 
         # Create a unique event ID
@@ -107,19 +143,16 @@ def start_event():
         # Store event data
         events[event_id] = {
             "questions": questions,
-            "num_questions": num_questions,  # Store the number of questions
             "participants": {},
             "completed": [],
             "qr_code": qr_code
         }
 
-        logger.info(f"Event started with ID: {event_id}")
         return jsonify({
             "event_id": event_id,
             "qr_code": qr_code
         })
     except Exception as e:
-        logger.error(f"Error starting event: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/join/<event_id>')
@@ -136,11 +169,10 @@ def register():
         if event_id not in events:
             return jsonify({"error": "Event not found."}), 404
 
-        # Assign questions to the participant based on the event setup
+        # Assign unique questions to the participant
         questions = events[event_id]["questions"]
         random.shuffle(questions)
-        num_questions = events[event_id]["num_questions"]  # Get the number of questions from event setup
-        participant_questions = questions[:num_questions]  # Assign the correct number of questions
+        participant_questions = questions[:5]  # Assign 5 random questions
 
         # Generate QR code for the participant
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -165,7 +197,6 @@ def register():
             "questions": participant_questions
         })
     except Exception as e:
-        logger.error(f"Error registering participant: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/event/<event_id>')
@@ -204,6 +235,4 @@ def handle_complete_bingo(data):
     }, room=event_id)
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))  # Use the PORT environment variable or default to 5000
-    logger.info(f"Starting app on port {port}")
-    socketio.run(app, host='0.0.0.0', port=port)
+    socketio.run(app, host='0.0.0.0', port=int(os.getenv('PORT', 5000)))

@@ -122,20 +122,20 @@
 
                     if (code) {
                         scannerMessage.textContent = `Scanned: ${code.data}`;
-                        stopScanner(); // Stop scanning after successful scan
+                        stopScanner(); // Stop the scanner after successful scan
                         submitAnswer(code.data);
                     }
                 }
             }, 100);
         }
 
+        // Function to stop the scanner
         function stopScanner() {
             clearInterval(scannerInterval);
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop()); // Stop the camera stream
             }
             video.srcObject = null; // Clear the video element
-            startScannerButton.disabled = false; // Re-enable the start scanner button
         }
 
         // Function to submit the answer
@@ -159,7 +159,7 @@
                         // Move to the next question
                         currentQuestionIndex++;
                         loadQuestion();
-                        scannerMessage.textContent = "Scanner stopped. Click 'Start Scanner' to answer the next question.";
+                        startScannerButton.disabled = false; // Re-enable the scanner button
                     }
                 } else {
                     scannerMessage.textContent = "Error submitting answer. Please try again.";
