@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Participant Screen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        #scannerVideo {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            margin: 20px 0;
+        }
+        #scannerMessage {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <div class="participant-container">
@@ -13,26 +31,119 @@
             <button onclick="switchTab('questions')">Questions</button>
             <button onclick="switchTab('qrCode')">My QR Code</button>
         </div>
+
+        <!-- Questions Tab -->
         <div id="questions" class="tab-content active">
             <h2>Your Questions</h2>
-            <ul>
-                {% for question in questions %}
-                    <li>{{ question }}</li>
-                {% endfor %}
-            </ul>
+            <div id="questionContainer">
+                <!-- Question will be dynamically inserted here -->
+            </div>
+            <div id="scanner">
+                <h3>Scan QR Code to Answer</h3>
+                <video id="scannerVideo"></video>
+                <button id="startScanner">Start Scanner</button>
+                <p id="scannerMessage"></p>
+            </div>
         </div>
+
+        <!-- QR Code Tab -->
         <div id="qrCode" class="tab-content">
             <h2>Your QR Code</h2>
             <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
         </div>
+
+        <!-- Completion Message -->
+        <div id="completionMessage" style="display: none;">
+            <h2>Congratulations, Bingo!</h2>
+            <p>You have completed all the questions.</p>
+        </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
+        const eventId = "{{ event_id }}";
+        const name = "{{ name }}";
+        let currentQuestionIndex = 0;
+        let questions = {{ questions | tojson }};
+
+        // Function to switch tabs
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
             document.getElementById(tabName).classList.add('active');
         }
+
+        // Function to load the current question
+        function loadQuestion() {
+            const questionContainer = document.getElementById('questionContainer');
+            if (currentQuestionIndex < questions.length) {
+                questionContainer.innerHTML = `<p>${questions[currentQuestionIndex]}</p>`;
+            } else {
+                // All questions completed
+                document.getElementById('questions').style.display = 'none';
+                document.getElementById('completionMessage').style.display = 'block';
+            }
+        }
+
+        // QR Code Scanner
+        const video = document.getElementById('scannerVideo');
+        const startScannerButton = document.getElementById('startScanner');
+        const scannerMessage = document.getElementById('scannerMessage');
+
+        startScannerButton.addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
+            video.play();
+            scanQRCode();
+        });
+
+        function scanQRCode() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+
+            setInterval(() => {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (code) {
+                    scannerMessage.textContent = `Scanned: ${code.data}`;
+                    submitAnswer(code.data);
+                }
+            }, 100);
+        }
+
+        // Function to submit the answer
+        async function submitAnswer(answer) {
+            const response = await fetch('/submit_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ event_id: eventId, name: name, answer: answer }),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                if (data.completed) {
+                    // Show completion message
+                    document.getElementById('questions').style.display = 'none';
+                    document.getElementById('completionMessage').style.display = 'block';
+                } else {
+                    // Move to the next question
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }
+            } else {
+                scannerMessage.textContent = "Error submitting answer. Please try again.";
+            }
+        }
+
+        // Load the first question
+        loadQuestion();
     </script>
 </body>
 </html>
