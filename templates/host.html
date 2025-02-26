@@ -11,56 +11,35 @@
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f4f4f4;
+            height: 100vh;
         }
         .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 800px;
-            margin: 20px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
+            display: flex;
+            width: 100%;
+            height: 100%;
         }
         #qrCode {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        #qrCode img {
-            width: 200px;
-            height: 200px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f4f4f4;
+            padding: 20px;
         }
         #instructions {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            flex: 2;
+            padding: 20px;
+            background-color: #fff;
+            overflow-y: auto;
         }
         #instructions h2 {
             margin-top: 0;
-        }
-        #participants {
-            margin-bottom: 20px;
-        }
-        #participantList, #completedList {
-            list-style-type: none;
-            padding: 0;
-        }
-        #participantList li, #completedList li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Host Screen</h1>
         <div id="qrCode">
             <h2>Event QR Code</h2>
             <img src="data:image/png;base64,{{ qr_code }}" alt="Event QR Code">
@@ -90,14 +69,6 @@
                 <li>The more you interact, the more fun the event becomes!</li>
             </ul>
             <p>🔹 <strong>Tip:</strong> Work together, explore, and enjoy the experience!</p>
-        </div>
-        <div id="participants">
-            <h2>Participants</h2>
-            <ul id="participantList">
-                {% for participant in participants %}
-                    <li>{{ participant }}</li>
-                {% endfor %}
-            </ul>
         </div>
     </div>
 </body>

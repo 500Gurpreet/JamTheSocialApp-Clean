@@ -83,7 +83,7 @@ def start_event():
 
         # Generate QR code for the event
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(f"{request.host_url}join/{event_id}")  # Ensure the URL is correct
+        qr.add_data(f"{request.host_url}join/{event_id}")
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
         buffered = BytesIO()
@@ -122,7 +122,7 @@ def register():
         # Assign unique questions to the participant
         questions = events[event_id]["questions"]
         random.shuffle(questions)
-        participant_questions = questions[:5]  # Assign 5 random questions
+        participant_questions = questions[:int(data.get('numQuestions'))]  # Use the selected number of questions
 
         # Generate QR code for the participant
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -153,7 +153,7 @@ def register():
 def event_host(event_id):
     if event_id not in events:
         return "Event not found.", 404
-    return render_template('host.html', event_id=event_id, participants=events[event_id]["participants"], qr_code=events[event_id]["qr_code"])
+    return render_template('host.html', event_id=event_id, qr_code=events[event_id]["qr_code"])
 
 @app.route('/participant/<event_id>/<name>')
 def event_participant(event_id, name):
@@ -185,4 +185,4 @@ def handle_complete_bingo(data):
     }, room=event_id)
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+    socketio.run(app, host='0.0.0.0', port=int(os.getenv('PORT', 5000))

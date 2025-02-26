@@ -41,6 +41,13 @@ function setupFormHandler() {
     }
 }
 
+if (code) {
+    console.log("Scanned QR Code Data:", code.data);
+    scannerMessage.textContent = `Scanned: ${code.data}`;
+    stopScanner(); // Stop the scanner after successful scan
+    submitAnswer(code.data);
+}
+
 // Run the appropriate handler based on the current page
 if (window.location.pathname === '/') {
     setupFormHandler();
