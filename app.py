@@ -106,7 +106,8 @@ def start_event():
             "questions": questions,
             "participants": {},
             "completed": [],
-            "qr_code": qr_code
+            "qr_code": qr_code,
+            "num_questions": num_questions  # Store the number of questions
         }
 
         return jsonify({
@@ -115,8 +116,6 @@ def start_event():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 
 
@@ -150,7 +149,7 @@ def register():
         # Assign unique questions to the participant
         questions = events[event_id]["questions"]
         random.shuffle(questions)
-        participant_questions = questions[:int(events[event_id]["num_questions"])]  # Use the selected number of questions
+        participant_questions = questions[:events[event_id]["num_questions"]]  # Use the stored number of questions
 
         # Generate QR code for the participant
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
