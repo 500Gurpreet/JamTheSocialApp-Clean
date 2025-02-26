@@ -62,6 +62,17 @@ def generate_ai_questions(age_group, event_type, tone, num_questions):
 def index():
     return render_template('index.html')
 
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/start_event', methods=['POST'])
 def start_event():
     try:
@@ -104,6 +115,17 @@ def start_event():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
+
+
 
 @app.route('/join/<event_id>')
 def join_event(event_id):

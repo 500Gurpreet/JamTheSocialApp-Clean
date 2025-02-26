@@ -30,6 +30,7 @@ function setupFormHandler() {
                     return;
                 }
 
+                // Redirect to the host screen with the event ID
                 window.location.href = `/event/${data.event_id}`;
             } catch (error) {
                 alert('An error occurred. Please try again.');
@@ -38,14 +39,15 @@ function setupFormHandler() {
                 submitButton.textContent = 'Start Event';
             }
         });
-    }
-}
 
-if (code) {
-    console.log("Scanned QR Code Data:", code.data);
-    scannerMessage.textContent = `Scanned: ${code.data}`;
-    stopScanner(); // Stop the scanner after successful scan
-    submitAnswer(code.data);
+        // Update the number of questions value dynamically
+        const numQuestionsInput = document.getElementById('numQuestions');
+        if (numQuestionsInput) {
+            numQuestionsInput.addEventListener('input', function() {
+                document.getElementById('numQuestionsValue').textContent = this.value;
+            });
+        }
+    }
 }
 
 // Run the appropriate handler based on the current page
