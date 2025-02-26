@@ -77,11 +77,6 @@ def start_event():
 
     # Create a unique event ID
     event_id = os.urandom(8).hex()
-    events[event_id] = {
-        "questions": questions,
-        "participants": {},
-        "completed": []
-    }
 
     # Generate QR code for the event
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -91,6 +86,14 @@ def start_event():
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     qr_code = base64.b64encode(buffered.getvalue()).decode()
+
+    # Store event data
+    events[event_id] = {
+        "questions": questions,
+        "participants": {},
+        "completed": [],
+        "qr_code": qr_code  # Store the QR code in the events dictionary
+    }
 
     return jsonify({
         "event_id": event_id,
