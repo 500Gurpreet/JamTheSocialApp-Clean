@@ -28,7 +28,11 @@
             }).then(response => response.json()).then(data => {
                 if (data.success) {
                     window.location.href = `/participant/{{ event_id }}/${encodeURIComponent(name)}`;
+                } else {
+                    alert(data.error || "Error joining the event. Please try again.");
                 }
+            }).catch(error => {
+                alert("An error occurred. Please try again.");
             });
         });
     </script>

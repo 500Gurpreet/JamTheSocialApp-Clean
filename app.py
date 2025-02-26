@@ -133,6 +133,12 @@ def join_event(event_id):
         return "Event not found.", 404
     return render_template('join.html', event_id=event_id)
 
+
+
+
+
+
+
 @app.route('/register', methods=['POST'])
 def register():
     try:
@@ -144,7 +150,7 @@ def register():
         # Assign unique questions to the participant
         questions = events[event_id]["questions"]
         random.shuffle(questions)
-        participant_questions = questions[:int(data.get('numQuestions'))]  # Use the selected number of questions
+        participant_questions = questions[:int(events[event_id]["num_questions"])]  # Use the selected number of questions
 
         # Generate QR code for the participant
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -170,6 +176,12 @@ def register():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
 
 @app.route('/event/<event_id>')
 def event_host(event_id):
