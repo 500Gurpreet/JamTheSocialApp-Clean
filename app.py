@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 from flask_socketio import join_room, leave_room
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import qrcode
 from io import BytesIO
 import base64
@@ -64,41 +64,46 @@ def index():
 
 @app.route('/start_event', methods=['POST'])
 def start_event():
-    data = request.json
-    age_group = f"{data.get('ageFrom')}-{data.get('ageTo')}"
-    event_type = data.get('eventType')
-    tone = data.get('tone')
-    num_questions = int(data.get('numQuestions'))
+    try:
+        data = request.json
+        age_group = f"{data.get('ageFrom')}-{data.get('ageTo')}"
+        event_type = data.get('eventType')
+        tone = data.get('tone')
+        num_questions = int(data.get('numQuestions'))
 
-    # Generate AI-based questions
-    questions = generate_ai_questions(age_group, event_type, tone, num_questions)
-    if not questions:
-        return jsonify({"error": "Failed to generate questions. Please try again."}), 500
+        if not all([age_group, event_type, tone, num_questions]):
+            return jsonify({"error": "Missing required fields"}), 400
 
-    # Create a unique event ID
-    event_id = os.urandom(8).hex()
+        questions = generate_ai_questions(age_group, event_type, tone, num_questions)
+        if not questions:
+            return jsonify({"error": "Failed to generate questions. Please try again."}), 500
 
-    # Generate QR code for the event
-    qr = qrcode.QRCode(version=1, box_size=10, border=5)
-    qr.add_data(f"{request.host_url}join/{event_id}")
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    qr_code = base64.b64encode(buffered.getvalue()).decode()
+        # Create a unique event ID
+        event_id = os.urandom(8).hex()
 
-    # Store event data
-    events[event_id] = {
-        "questions": questions,
-        "participants": {},
-        "completed": [],
-        "qr_code": qr_code  # Store the QR code in the events dictionary
-    }
+        # Generate QR code for the event
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(f"{request.host_url}join/{event_id}")
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        qr_code = base64.b64encode(buffered.getvalue()).decode()
 
-    return jsonify({
-        "event_id": event_id,
-        "qr_code": qr_code
-    })
+        # Store event data
+        events[event_id] = {
+            "questions": questions,
+            "participants": {},
+            "completed": [],
+            "qr_code": qr_code
+        }
+
+        return jsonify({
+            "event_id": event_id,
+            "qr_code": qr_code
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/join/<event_id>')
 def join_event(event_id):
@@ -108,42 +113,45 @@ def join_event(event_id):
 
 @app.route('/register', methods=['POST'])
 def register():
-    event_id = request.form.get('event_id')
-    name = request.form.get('name')
-    if event_id not in events:
-        return jsonify({"error": "Event not found."}), 404
+    try:
+        event_id = request.form.get('event_id')
+        name = request.form.get('name')
+        if event_id not in events:
+            return jsonify({"error": "Event not found."}), 404
 
-    # Assign unique questions to the participant
-    questions = events[event_id]["questions"]
-    random.shuffle(questions)
-    participant_questions = questions[:5]  # Assign 5 random questions
+        # Assign unique questions to the participant
+        questions = events[event_id]["questions"]
+        random.shuffle(questions)
+        participant_questions = questions[:5]  # Assign 5 random questions
 
-    # Generate QR code for the participant
-    qr = qrcode.QRCode(version=1, box_size=10, border=5)
-    qr.add_data(name)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    qr_code = base64.b64encode(buffered.getvalue()).decode()
+        # Generate QR code for the participant
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(name)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        qr_code = base64.b64encode(buffered.getvalue()).decode()
 
-    # Add participant to the event
-    events[event_id]["participants"][name] = {
-        "questions": participant_questions,
-        "qr_code": qr_code,
-        "completed": False
-    }
+        # Add participant to the event
+        events[event_id]["participants"][name] = {
+            "questions": participant_questions,
+            "qr_code": qr_code,
+            "completed": False
+        }
 
-    # Notify host about the new participant
-    socketio.emit('update_participants', {
-        "participants": list(events[event_id]["participants"].keys())
-    }, room=event_id)
+        # Notify host about the new participant
+        socketio.emit('update_participants', {
+            "participants": list(events[event_id]["participants"].keys())
+        }, room=event_id)
 
-    return jsonify({
-        "success": True,
-        "qr_code": qr_code,
-        "questions": participant_questions
-    })
+        return jsonify({
+            "success": True,
+            "qr_code": qr_code,
+            "questions": participant_questions
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/event/<event_id>')
 def event_host(event_id):
