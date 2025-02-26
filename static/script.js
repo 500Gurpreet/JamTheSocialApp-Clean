@@ -5,37 +5,39 @@ function setupFormHandler() {
         setupForm.addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            const eventType = document.getElementById('eventType').value;
-            const tone = document.getElementById('tone').value;
-            const ageFrom = document.getElementById('ageFrom').value;
-            const ageTo = document.getElementById('ageTo').value;
-            const numQuestions = document.getElementById('numQuestions').value;
+            const submitButton = setupForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Starting Event...';
 
-            const response = await fetch('/start_event', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ eventType, tone, ageFrom, ageTo, numQuestions }),
-            });
+            try {
+                const eventType = document.getElementById('eventType').value;
+                const tone = document.getElementById('tone').value;
+                const ageFrom = document.getElementById('ageFrom').value;
+                const ageTo = document.getElementById('ageTo').value;
+                const numQuestions = document.getElementById('numQuestions').value;
 
-            const data = await response.json();
-            if (data.error) {
-                alert(data.error);
-                return;
+                const response = await fetch('/start_event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ eventType, tone, ageFrom, ageTo, numQuestions }),
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                window.location.href = `/event/${data.event_id}`;
+            } catch (error) {
+                alert('An error occurred. Please try again.');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Start Event';
             }
-
-            // Redirect to the host screen with the event ID
-            window.location.href = `/event/${data.event_id}`;
         });
-
-        // Update the number of questions value dynamically
-        const numQuestionsInput = document.getElementById('numQuestions');
-        if (numQuestionsInput) {
-            numQuestionsInput.addEventListener('input', function() {
-                document.getElementById('numQuestionsValue').textContent = this.value;
-            });
-        }
     }
 }
 

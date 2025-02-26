@@ -79,6 +79,7 @@
                 if (code) {
                     alert(`Scanned: ${code.data}`);
                     // Handle the scanned QR code (e.g., mark the question as answered)
+                    socket.emit('answer_question', { event_id: eventId, name: name, answer: code.data });
                 }
             }, 100);
         }
