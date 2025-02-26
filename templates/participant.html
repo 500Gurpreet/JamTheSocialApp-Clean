@@ -67,6 +67,7 @@
         let currentQuestionIndex = 0;
         let questions = {{ questions | tojson }};
         let scannerInterval;
+        let videoStream;
 
         // Function to switch tabs
         function switchTab(tabName) {
@@ -97,6 +98,7 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
+                videoStream = stream; // Store the stream for later cleanup
                 video.play();
                 startScanner();
             } catch (error) {
@@ -120,11 +122,20 @@
 
                     if (code) {
                         scannerMessage.textContent = `Scanned: ${code.data}`;
-                        clearInterval(scannerInterval); // Stop scanning after successful scan
+                        stopScanner(); // Stop scanning after successful scan
                         submitAnswer(code.data);
                     }
                 }
             }, 100);
+        }
+
+        function stopScanner() {
+            clearInterval(scannerInterval);
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop()); // Stop the camera stream
+            }
+            video.srcObject = null; // Clear the video element
+            startScannerButton.disabled = false; // Re-enable the start scanner button
         }
 
         // Function to submit the answer
@@ -148,7 +159,7 @@
                         // Move to the next question
                         currentQuestionIndex++;
                         loadQuestion();
-                        startScanner(); // Restart scanner for the next question
+                        scannerMessage.textContent = "Scanner stopped. Click 'Start Scanner' to answer the next question.";
                     }
                 } else {
                     scannerMessage.textContent = "Error submitting answer. Please try again.";

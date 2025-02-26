@@ -93,6 +93,7 @@ def start_event():
         # Store event data
         events[event_id] = {
             "questions": questions,
+            "num_questions": num_questions,  # Store the number of questions
             "participants": {},
             "completed": [],
             "qr_code": qr_code
@@ -103,9 +104,7 @@ def start_event():
             "qr_code": qr_code
         })
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/join/<event_id>')
+        return jsonify({"error": str(e)}), 500@app.route('/join/<event_id>')
 def join_event(event_id):
     if event_id not in events:
         return "Event not found.", 404
@@ -119,10 +118,11 @@ def register():
         if event_id not in events:
             return jsonify({"error": "Event not found."}), 404
 
-        # Assign unique questions to the participant
+        # Assign questions to the participant based on the event setup
         questions = events[event_id]["questions"]
         random.shuffle(questions)
-        participant_questions = questions[:5]  # Assign 5 random questions
+        num_questions = events[event_id]["num_questions"]  # Get the number of questions from event setup
+        participant_questions = questions[:num_questions]  # Assign the correct number of questions
 
         # Generate QR code for the participant
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
