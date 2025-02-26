@@ -66,8 +66,6 @@
         const name = "{{ name }}";
         let currentQuestionIndex = 0;
         let questions = {{ questions | tojson }};
-        let scannerInterval;
-        let videoStream;
 
         // Function to switch tabs
         function switchTab(tabName) {
@@ -95,76 +93,51 @@
         const scannerMessage = document.getElementById('scannerMessage');
 
         startScannerButton.addEventListener('click', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                video.srcObject = stream;
-                videoStream = stream; // Store the stream for later cleanup
-                video.play();
-                startScanner();
-            } catch (error) {
-                scannerMessage.textContent = "Error accessing camera. Please allow camera permissions.";
-            }
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
+            video.play();
+            scanQRCode();
         });
 
-        function startScanner() {
+        function scanQRCode() {
             const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
 
-            scannerInterval = setInterval(() => {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                        inversionAttempts: "dontInvert",
-                    });
-
-                    if (code) {
-                        scannerMessage.textContent = `Scanned: ${code.data}`;
-                        stopScanner(); // Stop the scanner after successful scan
-                        submitAnswer(code.data);
-                    }
+            setInterval(() => {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (code) {
+                    scannerMessage.textContent = `Scanned: ${code.data}`;
+                    submitAnswer(code.data);
                 }
             }, 100);
         }
 
-        // Function to stop the scanner
-        function stopScanner() {
-            clearInterval(scannerInterval);
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop()); // Stop the camera stream
-            }
-            video.srcObject = null; // Clear the video element
-        }
-
         // Function to submit the answer
         async function submitAnswer(answer) {
-            try {
-                const response = await fetch('/submit_answer', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ event_id: eventId, name: name, answer: answer }),
-                });
+            const response = await fetch('/submit_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ event_id: eventId, name: name, answer: answer }),
+            });
 
-                const data = await response.json();
-                if (data.success) {
-                    if (data.completed) {
-                        // Show completion message
-                        document.getElementById('questions').style.display = 'none';
-                        document.getElementById('completionMessage').style.display = 'block';
-                    } else {
-                        // Move to the next question
-                        currentQuestionIndex++;
-                        loadQuestion();
-                        startScannerButton.disabled = false; // Re-enable the scanner button
-                    }
+            const data = await response.json();
+            if (data.success) {
+                if (data.completed) {
+                    // Show completion message
+                    document.getElementById('questions').style.display = 'none';
+                    document.getElementById('completionMessage').style.display = 'block';
                 } else {
-                    scannerMessage.textContent = "Error submitting answer. Please try again.";
+                    // Move to the next question
+                    currentQuestionIndex++;
+                    loadQuestion();
                 }
-            } catch (error) {
+            } else {
                 scannerMessage.textContent = "Error submitting answer. Please try again.";
             }
         }
