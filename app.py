@@ -147,6 +147,14 @@ def event_host(event_id):
         return "Event not found.", 404
     return render_template('host.html', event_id=event_id, participants=events[event_id]["participants"])
 
+
+
+@app.route('/event/<event_id>')
+def event_host(event_id):
+    if event_id not in events:
+        return "Event not found.", 404
+    return render_template('host.html', event_id=event_id, participants=events[event_id]["participants"])
+
 @app.route('/participant/<event_id>/<name>')
 def event_participant(event_id, name):
     if event_id not in events or name not in events[event_id]["participants"]:
