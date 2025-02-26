@@ -162,6 +162,62 @@ def event_participant(event_id, name):
     participant = events[event_id]["participants"][name]
     return render_template('participant.html', event_id=event_id, name=name, questions=participant["questions"], qr_code=participant["qr_code"])
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/submit_answer', methods=['POST'])
+def submit_answer():
+    try:
+        data = request.json
+        event_id = data.get('event_id')
+        name = data.get('name')
+        answer = data.get('answer')
+
+        if event_id not in events or name not in events[event_id]["participants"]:
+            return jsonify({"error": "Invalid event or participant."}), 404
+
+        participant = events[event_id]["participants"][name]
+        current_index = participant["current_question_index"]
+
+        # Check if the answer is correct (for now, assume all answers are correct)
+        # You can add logic to validate the answer if needed
+
+        # Move to the next question
+        participant["current_question_index"] += 1
+
+        # Check if all questions are completed
+        if participant["current_question_index"] >= len(participant["questions"]):
+            participant["completed"] = True
+            return jsonify({"success": True, "completed": True, "message": "Congratulations, Bingo!"})
+
+        return jsonify({
+            "success": True,
+            "completed": False,
+            "next_question": participant["questions"][participant["current_question_index"]]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
+
 # SocketIO events
 @socketio.on('join_event')
 def handle_join_event(data):
