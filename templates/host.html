@@ -5,13 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Host Screen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #qrCode {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #qrCode img {
+            width: 200px;
+            height: 200px;
+        }
+        #instructions {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        #instructions h2 {
+            margin-top: 0;
+        }
+        #participants {
+            margin-bottom: 20px;
+        }
+        #participantList, #completedList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #participantList li, #completedList li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
-    <div class="host-container">
+    <div class="container">
+        <h1>Host Screen</h1>
         <div id="qrCode">
             <h2>Event QR Code</h2>
             <img src="data:image/png;base64,{{ qr_code }}" alt="Event QR Code">
             <p>Scan this QR code to join the event.</p>
+        </div>
+        <div id="instructions">
+            <h2>How to Participate in the Event</h2>
+            <p><strong>Step 1: Join the Event</strong></p>
+            <ul>
+                <li>Scan the QR code provided to you.</li>
+                <li>Enter your name and join the event.</li>
+            </ul>
+            <p><strong>Step 2: Answer Questions by Scanning QR Codes</strong></p>
+            <ul>
+                <li>You will receive a question on your screen.</li>
+                <li>To answer, find someone whose QR code matches the correct answer.</li>
+                <li>Scan their QR code to submit your response.</li>
+            </ul>
+            <p><strong>Step 3: Let Others Scan Your QR Code</strong></p>
+            <ul>
+                <li>Your screen will also display an answer that someone else is looking for.</li>
+                <li>Allow others to scan your QR code so they can submit their answer.</li>
+            </ul>
+            <p><strong>Step 4: Keep Interacting & Enjoy!</strong></p>
+            <ul>
+                <li>Meet new people, scan more QR codes, and learn about each other.</li>
+                <li>The more you interact, the more fun the event becomes!</li>
+            </ul>
+            <p>🔹 <strong>Tip:</strong> Work together, explore, and enjoy the experience!</p>
         </div>
         <div id="participants">
             <h2>Participants</h2>
