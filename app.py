@@ -8,6 +8,7 @@ from io import BytesIO
 import base64
 from flask_socketio import SocketIO, emit
 import random
+import json
 import logging
 
 # Load environment variables
@@ -58,7 +59,13 @@ def generate_ai_questions(age_group, event_type, tone, num_questions):
             temperature=0.7,
         )
         questions = response.choices[0].message.content.strip()
-        return eval(questions)  # Convert the string response to a Python list
+        
+        # Ensure the response is properly decoded
+        if isinstance(questions, bytes):
+            questions = questions.decode('utf-8')
+        
+        # Safely parse the JSON response
+        return json.loads(questions)
     except Exception as e:
         logger.error(f"Error generating questions: {e}")
         return []
@@ -82,6 +89,7 @@ def start_event():
 
         questions = generate_ai_questions(age_group, event_type, tone, num_questions)
         if not questions:
+            logger.error("Failed to generate questions.")
             return jsonify({"error": "Failed to generate questions. Please try again."}), 500
 
         # Create a unique event ID
@@ -114,7 +122,86 @@ def start_event():
         logger.error(f"Error starting event: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Add other routes and logic here...
+@app.route('/join/<event_id>')
+def join_event(event_id):
+    if event_id not in events:
+        return "Event not found.", 404
+    return render_template('join.html', event_id=event_id)
+
+@app.route('/register', methods=['POST'])
+def register():
+    try:
+        event_id = request.form.get('event_id')
+        name = request.form.get('name')
+        if event_id not in events:
+            return jsonify({"error": "Event not found."}), 404
+
+        # Assign questions to the participant based on the event setup
+        questions = events[event_id]["questions"]
+        random.shuffle(questions)
+        num_questions = events[event_id]["num_questions"]  # Get the number of questions from event setup
+        participant_questions = questions[:num_questions]  # Assign the correct number of questions
+
+        # Generate QR code for the participant
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(name)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        qr_code = base64.b64encode(buffered.getvalue()).decode()
+
+        # Add participant to the event
+        events[event_id]["participants"][name] = {
+            "questions": participant_questions,
+            "qr_code": qr_code,
+            "completed": False,
+            "current_question_index": 0  # Track the current question
+        }
+
+        return jsonify({
+            "success": True,
+            "qr_code": qr_code,
+            "questions": participant_questions
+        })
+    except Exception as e:
+        logger.error(f"Error registering participant: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/event/<event_id>')
+def event_host(event_id):
+    if event_id not in events:
+        return "Event not found.", 404
+    return render_template('host.html', event_id=event_id, participants=events[event_id]["participants"], qr_code=events[event_id]["qr_code"])
+
+@app.route('/participant/<event_id>/<name>')
+def event_participant(event_id, name):
+    if event_id not in events or name not in events[event_id]["participants"]:
+        return "Participant not found.", 404
+    participant = events[event_id]["participants"][name]
+    return render_template('participant.html', event_id=event_id, name=name, questions=participant["questions"], qr_code=participant["qr_code"])
+
+# SocketIO events
+@socketio.on('join_event')
+def handle_join_event(data):
+    event_id = data['event_id']
+    join_room(event_id)
+
+@socketio.on('complete_bingo')
+def handle_complete_bingo(data):
+    event_id = data['event_id']
+    name = data['name']
+    if event_id not in events or name not in events[event_id]["participants"]:
+        return
+
+    # Mark participant as completed
+    events[event_id]["participants"][name]["completed"] = True
+    events[event_id]["completed"].append(name)
+
+    # Notify host about the completion
+    socketio.emit('update_completed', {
+        "completed": events[event_id]["completed"]
+    }, room=event_id)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))  # Use the PORT environment variable or default to 5000
