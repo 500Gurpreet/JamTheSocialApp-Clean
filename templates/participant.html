@@ -5,17 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Participant Screen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="participant-container">
         <h1>Welcome, {{ name }}!</h1>
         <div class="tabs">
             <button onclick="switchTab('questions')">Questions</button>
@@ -28,66 +20,19 @@
                     <li>{{ question }}</li>
                 {% endfor %}
             </ul>
-            <div id="scanner">
-                <h3>Scan QR Code to Answer</h3>
-                <video id="scannerVideo" width="300" height="200"></video>
-                <button id="startScanner">Start Scanner</button>
-            </div>
         </div>
         <div id="qrCode" class="tab-content">
             <h2>Your QR Code</h2>
             <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
         </div>
-        <button id="completeBingo">Complete Bingo</button>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
-        const socket = io();
-        const eventId = "{{ event_id }}";
-        const name = "{{ name }}";
-
-        // Switch between tabs
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
             document.getElementById(tabName).classList.add('active');
         }
-
-        // QR Code Scanner
-        const video = document.getElementById('scannerVideo');
-        const startScannerButton = document.getElementById('startScanner');
-
-        startScannerButton.addEventListener('click', async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            video.srcObject = stream;
-            video.play();
-            scanQRCode();
-        });
-
-        function scanQRCode() {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-
-            setInterval(() => {
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height);
-                if (code) {
-                    alert(`Scanned: ${code.data}`);
-                    // Handle the scanned QR code (e.g., mark the question as answered)
-                    socket.emit('answer_question', { event_id: eventId, name: name, answer: code.data });
-                }
-            }, 100);
-        }
-
-        // Complete Bingo
-        document.getElementById('completeBingo').addEventListener('click', function() {
-            socket.emit('complete_bingo', { event_id: eventId, name: name });
-        });
     </script>
 </body>
 </html>

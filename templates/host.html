@@ -5,47 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Host Screen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-        }
-        .container {
-            display: flex;
-            width: 100%;
-        }
-        #qrCode {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        #participants {
-            flex: 1;
-            padding: 20px;
-            background-color: #fff;
-            overflow-y: auto;
-        }
-        #participantList, #completedList {
-            list-style-type: none;
-            padding: 0;
-        }
-        #participantList li, #completedList li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="host-container">
         <div id="qrCode">
             <h2>Event QR Code</h2>
-            <img src="data:image/png;base64,{{ qr_code }}" alt="Event QR Code" style="width: 200px; height: 200px;">
+            <img src="data:image/png;base64,{{ qr_code }}" alt="Event QR Code">
             <p>Scan this QR code to join the event.</p>
         </div>
         <div id="participants">
@@ -55,29 +20,7 @@
                     <li>{{ participant }}</li>
                 {% endfor %}
             </ul>
-            <h2>Completed Bingo</h2>
-            <ul id="completedList"></ul>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const eventId = "{{ event_id }}";
-
-        // Update participants list in real time
-        socket.on('update_participants', function(data) {
-            const participantList = document.getElementById('participantList');
-            participantList.innerHTML = data.participants.map(name => `<li>${name}</li>`).join('');
-        });
-
-        // Update completed list in real time
-        socket.on('update_completed', function(data) {
-            const completedList = document.getElementById('completedList');
-            completedList.innerHTML = data.completed.map(name => `<li>${name}</li>`).join('');
-        });
-
-        // Join the event room
-        socket.emit('join_event', { event_id: eventId });
-    </script>
 </body>
 </html>
