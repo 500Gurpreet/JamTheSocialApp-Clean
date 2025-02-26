@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -476,5 +476,5 @@ def handle_complete_bingo(data):
     }, room=event_id)
 
 if __name__ == '__main__':
->>>>>>> 59f9a04 (Updated all files)
+
     socketio.run(app, host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
