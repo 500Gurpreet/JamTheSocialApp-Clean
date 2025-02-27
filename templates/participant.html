@@ -9,17 +9,32 @@
 <body>
     <div class="participant-container">
         <h1>Welcome, {{ name }}!</h1>
-        <div id="question-container">
-            <h2 id="question-text">Loading question...</h2>
-            <button id="scan-button" onclick="openScanner()">Scan QR Code to Answer</button>
+        <div class="tabs">
+            <button onclick="showTab('questions-tab')">Questions</button>
+            <button onclick="showTab('qr-code-tab')">Your QR Code</button>
         </div>
-        <div id="bingo-message" style="display: none;">
-            <h2>Congratulations, Bingo!</h2>
+
+        <!-- Questions Tab -->
+        <div id="questions-tab" class="tab-content active">
+            <div id="question-container">
+                <h2 id="question-text">Loading question...</h2>
+                <button id="scan-button" onclick="openScanner()">Scan QR Code to Answer</button>
+            </div>
+            <div id="bingo-message" style="display: none;">
+                <h2>Congratulations, Bingo!</h2>
+            </div>
+            <div id="scanner" style="display: none;">
+                <h3>Scan QR Code</h3>
+                <video id="qr-video" width="300" height="200"></video>
+                <button onclick="closeScanner()">Close Scanner</button>
+            </div>
         </div>
-        <div id="scanner" style="display: none;">
-            <h3>Scan QR Code</h3>
-            <video id="qr-video" width="300" height="200"></video>
-            <button onclick="closeScanner()">Close Scanner</button>
+
+        <!-- QR Code Tab -->
+        <div id="qr-code-tab" class="tab-content">
+            <h2>Your QR Code</h2>
+            <img src="data:image/png;base64,{{ qr_code }}" alt="Your QR Code">
+            <p>Show this QR code to others so they can scan it to answer their questions.</p>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
@@ -27,6 +42,14 @@
         let currentQuestionIndex = 0;
         const eventId = "{{ event_id }}";
         const participantName = "{{ name }}";
+
+        // Function to show/hide tabs
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            document.getElementById(tabId).style.display = 'block';
+        }
 
         // Function to fetch the next question
         async function fetchNextQuestion() {

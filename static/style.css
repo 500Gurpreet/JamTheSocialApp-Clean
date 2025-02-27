@@ -245,6 +245,33 @@ body {
     margin-top: 50px;
 }
 
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.tabs button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.tabs button:hover {
+    background-color: #218838;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
 #question-container {
     margin-bottom: 20px;
 }
@@ -294,4 +321,10 @@ body {
 
 #scanner button:hover {
     background-color: #c82333;
+}
+
+#qr-code-tab img {
+    width: 200px;
+    height: 200px;
+    margin-top: 20px;
 }
