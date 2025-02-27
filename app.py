@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from openai import OpenAI
 from flask_socketio import join_room, leave_room
@@ -53,7 +54,7 @@ def generate_ai_questions(age_group, event_type, tone, num_questions):
             temperature=0.7,
         )
         questions = response.choices[0].message.content.strip()
-        return eval(questions)  # Convert the string response to a Python list
+        return json.loads(questions)  # Safely parse the JSON response
     except Exception as e:
         print(f"Error generating questions: {e}")
         return []
@@ -62,9 +63,6 @@ def generate_ai_questions(age_group, event_type, tone, num_questions):
 def index():
     return render_template('index.html')
 
-
-
-# i type this manualy without finding the clone of it.
 @app.route('/submit_answer', methods=['POST'])
 def submit_answer():
     try:
@@ -80,7 +78,6 @@ def submit_answer():
         current_index = participant["current_question_index"]
 
         # Check if the answer is valid (for now, assume all answers are valid)
-        # You can add custom validation logic here if needed
         if not answer:
             return jsonify({"error": "Invalid answer."}), 400
 
@@ -104,24 +101,6 @@ def submit_answer():
     except Exception as e:
         print(f"Error in submit_answer: {e}")
         return jsonify({"error": str(e)}), 500
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @app.route('/start_event', methods=['POST'])
 def start_event():
@@ -167,26 +146,11 @@ def start_event():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-
-
-
-
-
-
-
-
 @app.route('/join/<event_id>')
 def join_event(event_id):
     if event_id not in events:
         return "Event not found.", 404
     return render_template('join.html', event_id=event_id)
-
-
-
-
-
-
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -225,12 +189,6 @@ def register():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-
-
-
-
 
 @app.route('/event/<event_id>')
 def event_host(event_id):
