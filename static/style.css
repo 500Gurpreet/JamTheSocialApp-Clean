@@ -6,6 +6,40 @@ body {
     height: 100vh;
 }
 
+/* Styles for the host screen (host.html) */
+.host-container {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin: auto;
+    margin-top: 50px;
+}
+
+#qrCode {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+#instructions {
+    flex: 2;
+    padding: 20px;
+    background-color: #fff;
+    overflow-y: auto;
+}
+
+#instructions h2 {
+    margin-top: 0;
+}
+
 /* Styles for the setup page (index.html) */
 .setup-container {
     background: white;
