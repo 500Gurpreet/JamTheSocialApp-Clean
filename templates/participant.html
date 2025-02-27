@@ -9,30 +9,115 @@
 <body>
     <div class="participant-container">
         <h1>Welcome, {{ name }}!</h1>
-        <div class="tabs">
-            <button onclick="showTab('questions')">Questions</button>
-            <button onclick="showTab('qrCode')">Your QR Code</button>
+        <div id="question-container">
+            <h2 id="question-text">Loading question...</h2>
+            <button id="scan-button" onclick="openScanner()">Scan QR Code to Answer</button>
         </div>
-        <div id="questions" class="tab-content active">
-            <h2>Your Questions</h2>
-            <ul>
-                {% for question in questions %}
-                <li>{{ question }}</li>
-                {% endfor %}
-            </ul>
+        <div id="bingo-message" style="display: none;">
+            <h2>Congratulations, Bingo!</h2>
         </div>
-        <div id="qrCode" class="tab-content">
-            <h2>Your QR Code</h2>
-            <img src="data:image/png;base64,{{ qr_code }}" alt="Your QR Code">
+        <div id="scanner" style="display: none;">
+            <h3>Scan QR Code</h3>
+            <video id="qr-video" width="300" height="200"></video>
+            <button onclick="closeScanner()">Close Scanner</button>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
-            document.getElementById(tabName).style.display = 'block';
+        let currentQuestionIndex = 0;
+        const eventId = "{{ event_id }}";
+        const participantName = "{{ name }}";
+
+        // Function to fetch the next question
+        async function fetchNextQuestion() {
+            const response = await fetch(`/get_next_question/${eventId}/${participantName}`);
+            const data = await response.json();
+            if (data.completed) {
+                document.getElementById('question-container').style.display = 'none';
+                document.getElementById('bingo-message').style.display = 'block';
+            } else {
+                document.getElementById('question-text').textContent = data.question;
+            }
         }
+
+        // Function to open the QR code scanner
+        function openScanner() {
+            document.getElementById('scanner').style.display = 'block';
+            startScanner();
+        }
+
+        // Function to close the QR code scanner
+        function closeScanner() {
+            document.getElementById('scanner').style.display = 'none';
+            stopScanner();
+        }
+
+        // QR Code Scanner Logic
+        let videoStream;
+        let interval;
+
+        function startScanner() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => {
+                    videoStream = stream;
+                    const video = document.getElementById('qr-video');
+                    video.srcObject = stream;
+                    video.play();
+                    interval = setInterval(scanQRCode, 500);
+                })
+                .catch(err => {
+                    console.error("Error accessing camera:", err);
+                    alert("Unable to access camera. Please ensure permissions are granted.");
+                });
+        }
+
+        function stopScanner() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+            clearInterval(interval);
+        }
+
+        function scanQRCode() {
+            const video = document.getElementById('qr-video');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+            if (code) {
+                stopScanner();
+                closeScanner();
+                submitAnswer(code.data);
+            }
+        }
+
+        // Function to submit the answer
+        async function submitAnswer(answer) {
+            const response = await fetch('/submit_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    event_id: eventId,
+                    name: participantName,
+                    answer: answer
+                }),
+            });
+            const data = await response.json();
+            if (data.success) {
+                fetchNextQuestion();
+            } else {
+                alert(data.error || "Error submitting answer. Please try again.");
+            }
+        }
+
+        // Fetch the first question when the page loads
+        fetchNextQuestion();
     </script>
 </body>
 </html>

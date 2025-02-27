@@ -1,177 +1,3 @@
-/* General styles for all pages */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-}
-
-/* Styles for the setup page (index.html) */
-.setup-container {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
-    text-align: center;
-    margin: auto;
-    margin-top: 50px;
-}
-
-.setup-container h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.setup-container label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.setup-container select, .setup-container input, .setup-container button {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-}
-
-.setup-container button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.setup-container button:hover {
-    background-color: #218838;
-}
-
-.setup-container .age-group {
-    margin-bottom: 15px;
-}
-
-.setup-container .age-inputs {
-    display: flex;
-    gap: 10px;
-}
-
-.setup-container .age-inputs input {
-    flex: 1;
-}
-
-.setup-container .slider-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.setup-container #numQuestions {
-    flex: 1;
-}
-
-.setup-container #progressBar {
-    width: 100%;
-    background-color: #f3f3f3;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.setup-container #progress {
-    width: 0;
-    height: 10px;
-    background-color: #28a745;
-    border-radius: 5px;
-    transition: width 0.3s ease;
-}
-
-.setup-container #questionsContainer {
-    margin-bottom: 20px;
-}
-
-.setup-container #finishMessage {
-    display: none;
-}
-
-/* Styles for the host screen (host.html) */
-.host-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-}
-
-.host-container #qrCode {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #f4f4f4;
-    padding: 20px;
-}
-
-.host-container #participants {
-    flex: 1;
-    padding: 20px;
-    background-color: #fff;
-    overflow-y: auto;
-}
-
-.host-container #participantList, .host-container #completedList {
-    list-style-type: none;
-    padding: 0;
-}
-
-.host-container #participantList li, .host-container #completedList li {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-/* Styles for the join page (join.html) */
-.join-container {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
-    text-align: center;
-    margin: auto;
-    margin-top: 50px;
-}
-
-.join-container h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.join-container label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.join-container input, .join-container button {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-}
-
-.join-container button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.join-container button:hover {
-    background-color: #218838;
-}
-
 /* Styles for the participant page (participant.html) */
 .participant-container {
     background: white;
@@ -184,18 +10,16 @@ body {
     margin-top: 50px;
 }
 
-.participant-container h1 {
-    text-align: center;
+#question-container {
     margin-bottom: 20px;
 }
 
-.participant-container .tabs {
-    display: flex;
-    justify-content: space-around;
+#question-text {
+    font-size: 1.2em;
     margin-bottom: 20px;
 }
 
-.participant-container .tabs button {
+#scan-button {
     background-color: #28a745;
     color: white;
     border: none;
@@ -204,29 +28,35 @@ body {
     cursor: pointer;
 }
 
-.participant-container .tabs button:hover {
+#scan-button:hover {
     background-color: #218838;
 }
 
-.participant-container .tab-content {
-    display: none;
+#bingo-message {
+    color: #28a745;
+    font-size: 1.5em;
+    margin-top: 20px;
 }
 
-.participant-container .tab-content.active {
-    display: block;
+#scanner {
+    margin-top: 20px;
 }
 
-.participant-container #questions ul {
-    list-style-type: none;
-    padding: 0;
+#scanner video {
+    border: 2px solid #28a745;
+    border-radius: 5px;
 }
 
-.participant-container #questions li {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+#scanner button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
 }
 
-.participant-container #qrCode img {
-    width: 200px;
-    height: 200px;
+#scanner button:hover {
+    background-color: #c82333;
 }

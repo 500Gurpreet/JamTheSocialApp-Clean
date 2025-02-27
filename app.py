@@ -63,6 +63,13 @@ def generate_ai_questions(age_group, event_type, tone, num_questions):
 def index():
     return render_template('index.html')
 
+
+
+
+
+
+
+
 @app.route('/submit_answer', methods=['POST'])
 def submit_answer():
     try:
@@ -196,12 +203,74 @@ def event_host(event_id):
         return "Event not found.", 404
     return render_template('host.html', event_id=event_id, qr_code=events[event_id]["qr_code"])
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/participant/<event_id>/<name>')
 def event_participant(event_id, name):
     if event_id not in events or name not in events[event_id]["participants"]:
         return "Participant not found.", 404
     participant = events[event_id]["participants"][name]
     return render_template('participant.html', event_id=event_id, name=name, questions=participant["questions"], qr_code=participant["qr_code"])
+
+@app.route('/get_next_question/<event_id>/<name>')
+def get_next_question(event_id, name):
+    if event_id not in events or name not in events[event_id]["participants"]:
+        return jsonify({"error": "Invalid event or participant."}), 404
+
+    participant = events[event_id]["participants"][name]
+    current_index = participant["current_question_index"]
+
+    if current_index >= len(participant["questions"]):
+        return jsonify({
+            "completed": True,
+            "message": "Congratulations, Bingo!"
+        })
+
+    return jsonify({
+        "completed": False,
+        "question": participant["questions"][current_index]
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # SocketIO events
 @socketio.on('join_event')
