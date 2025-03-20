@@ -12,13 +12,24 @@ body {
 }
 
 /* Container Styling */
-.host-container, .setup-container, .join-container, .participant-container {
+.host-container, .setup-container {
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     padding: 20px;
     max-width: 90%;
     width: 35%;
+    overflow: hidden;
+}
+
+
+ .join-container, .participant-container {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    max-width: 95%;
+    width: 90%;
     overflow: hidden;
 }
 /* .join-container */
