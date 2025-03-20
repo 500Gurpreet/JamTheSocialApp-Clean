@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Host Screen</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style3.css') }}">
-    <style>
-        body {
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
+    <link rel="stylesheet" href="C:\Users\risha\Downloads\jam social project\JamTheSocialApp-Clean-main\JamTheSocialApp-Clean-main\static\style3.css">
+
+        <style>
+        /* body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -42,8 +44,32 @@
         }
         #instructions h2 {
             margin-top: 0;
-        }
-    </style>
+        } */
+        .host-container {
+    display: flex;
+    max-width: 90%;
+    width: 70%;
+    flex-direction: row; /* places items side-by-side */
+}
+
+#qrCode, #instructions {
+    flex: 1; /* Both divs will occupy equal space; adjust numbers if needed */
+    padding: 20px;
+}
+
+#qrCode {
+    background-color: #fdf2e6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#instructions {
+    background-color: #ffffff;
+    overflow-y: auto;
+}
+    </style> 
 </head>
 <body>
     <div class="host-container">
